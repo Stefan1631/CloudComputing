@@ -1,0 +1,238 @@
+{
+  "info": {
+    "_postman_id": "ca494786-21f0-4a16-81ae-30aa4d9fbbb2",
+    "name": "requests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44160833",
+    "_collection_link": "https://go.postman.co/collection/44160833-ca494786-21f0-4a16-81ae-30aa4d9fbbb2?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "http://localhost:8000/student",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"nume\":\"Ionescu\",\r\n        \"prenume\":\"Ionel\"\r\n    },\r\n    {\r\n        \"nume\":\"Popescu\",\r\n        \"prenume\": \"Florin\"\r\n    },\r\n    {\r\n        \"nume\":\"Alexandru\",\r\n        \"prenume\": \"Ana\"\r\n    }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/student",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/student",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/student",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/student/3",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/student/3",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "student",
+            "3"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/note",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"studentId\": \"1\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"10\"\r\n    },\r\n    {\r\n        \"studentId\": \"3\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"9\"\r\n    }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/note",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "note"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/note/2/mate/6",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"studentId\": \"1\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"10\"\r\n    },\r\n    {\r\n        \"studentId\": \"3\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"9\"\r\n    }\r\n]"
+        },
+        "url": {
+          "raw": "http://localhost:8000/note/2/mate/6",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "note",
+            "2",
+            "mate",
+            "6"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/note",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"studentId\": \"1\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"10\"\r\n    },\r\n    {\r\n        \"studentId\": \"3\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"9\"\r\n    }\r\n]"
+        },
+        "url": {
+          "raw": "http://localhost:8000/note",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "note"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/note/1/mate/8",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"studentId\": \"1\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"9\"\r\n    },\r\n    {\r\n        \"studentId\": \"3\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"10\"\r\n    }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/note/1/mate/8",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "note",
+            "1",
+            "mate",
+            "8"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/student/3",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"studentId\": \"1\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"10\"\r\n    },\r\n    {\r\n        \"studentId\": \"3\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"9\"\r\n    }\r\n]"
+        },
+        "url": {
+          "raw": "http://localhost:8000/student/3",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "student",
+            "3"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8000/note/3/mate",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n    {\r\n        \"studentId\": \"1\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"10\"\r\n    },\r\n    {\r\n        \"studentId\": \"3\",\r\n        \"materie\": \"mate\",\r\n        \"nota\": \"9\"\r\n    }\r\n]"
+        },
+        "url": {
+          "raw": "http://localhost:8000/note/3/mate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "note",
+            "3",
+            "mate"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
