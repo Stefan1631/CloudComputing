@@ -13,7 +13,7 @@ try:
         DROP TABLE Note
     ''')
     conn.commit()
-    print("am dat drop la User si History cu succes")
+    print("am dat drop la Student si Note cu succes")
 except Exception as e:
     print(f"A aparut o eroare la droparea tabelei: {e}")
 finally:

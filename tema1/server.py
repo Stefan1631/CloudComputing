@@ -54,6 +54,29 @@ class MyHandler(BaseHTTPRequestHandler):
             else:
                 error_message="Nu exista note trecute in baza de date"
                 self.send_error(404,error_message)
+
+        elif self.path.startswith('/note'):
+            if len(self.path.split('/'))!=4:
+                error_message = "Resursele oferite nu sunt bune"
+                self.send_error(400, error_message)
+                return
+            id=self.path.split('/')[-2]
+            materie=self.path.split('/')[-1]
+
+            nota=getGrade(studentId=id,materie=materie)
+            if nota==-1:
+                error_message = f"A aparut o eroare la gasirea notei"
+                self.send_error(500, error_message)
+                return
+            elif nota==None:
+                error_message = "Nu exista note trecute in baza de date"
+                self.send_error(404, error_message)
+            else:
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(nota).encode())
+
         else:
             error_message="Resursa nu exista"
             self.send_error(400, error_message)

@@ -104,6 +104,7 @@ def getGrade(studentId,materie):
         inregistrari = cursor.fetchone()
     except Exception as e:
         print(f"A aparut o eroare la executia select-ului in baza de date: {e}")
+        inregistrari=-1
     finally:
         if conn:
             conn.close()
