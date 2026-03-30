@@ -1,0 +1,10 @@
+# Specifică versiunea de Python pe care o folosești
+runtime: python312
+
+# Instanța F1 este cea mai mică și este inclusă în Free Tier (consumă puțin din cei 10$)
+instance_class: F1
+
+# Spune-i serverului cum să pornească aplicația Flask din main.py
+entrypoint: gunicorn -b :$PORT main:app
+env_variables:
+  BUCKET_NAME: "project-3e423040-29dc-4907-803.appspot.com"

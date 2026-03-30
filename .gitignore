@@ -1,0 +1,22 @@
+# created by virtualenv automatically
+# Python - folderele de biblioteci și cache
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+
+# Google Cloud - fișiere temporare și log-uri locale
+.cloudstorage/
+.datastore/
+appengine-generated/
+*.log
+
+# Fișiere de sistem și IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Date sensibile (dacă ai descărcat vreodată chei JSON pentru Service Accounts)
+*.json
