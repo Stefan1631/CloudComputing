@@ -61,7 +61,7 @@ def getTraducere():
     bucket = storage_client.bucket(BUCKET_NAME)
     blob = bucket.blob('ultima_traducere.txt')
     if blob.exists():
-        continut = blob.download_as_text()  # Aici luăm textul din blob
+        continut = blob.download_as_text()
     else:
         continut = "Nu s-a tradus nimic inca"
 
