@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Istoric Traduceri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container" style="max-width: 800px;">
+       {% for t in traduceri %}
+        <div class="result" style="margin-bottom: 10px; border-left: 5px solid #34a853;">
+            <small>{{ t.data }}</small><br>
+            <strong>EN:</strong> {{ t.original }}<br>
+            <strong>RO:</strong> {{ t.tradus }}
+        </div>
+        {% else %}
+        <p>Nu s-a tradus nimic inca</p>
+        {% endfor %}
+
+    </div>
+</body>
+</html>

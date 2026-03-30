@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloud web services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Cloud Translator & Storage</h1>
+        <p>Servicii folosite: App Engine, Storage (Stateful), Translation API, Vision API, Logging.</p>
+
+        <form action="/process" method="post">
+            <label>Introdu text pentru traducere (EN -> RO):</label>
+            <textarea name="text_to_translate" placeholder="Scrie aici..."></textarea>
+            <button type="submit">Tradu</button>
+        </form>
+
+        {% if original %}
+        <div class="result">
+            <strong>Original:</strong> {{ original }}<br>
+            <strong>Traducere:</strong> {{ translated }}<br>
+            <small style="color: green;">Fisierul a fost salvat in Cloud Storage!</small>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
