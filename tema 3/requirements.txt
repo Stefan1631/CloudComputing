@@ -3,3 +3,5 @@ gunicorn==23.0.0
 google-cloud-storage
 google-cloud-translate
 google-cloud-datastore
+google-cloud-language
+google-cloud-texttospeech

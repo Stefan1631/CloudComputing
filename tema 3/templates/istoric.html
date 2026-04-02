@@ -8,9 +8,12 @@
     <div class="container" style="max-width: 800px;">
        {% for t in continut %}
         <div class="result" style="margin-bottom: 10px; border-left: 5px solid #34a853;">
-            <small>{{ t.data }}</small><br>
+            <small>{{ t['timestamp'] }}</small><br>
             <strong>EN:</strong> {{ t['original'] }}<br>
-            <strong>RO:</strong> {{ t['tradus'] }}
+            <strong>RO:</strong> {{ t['tradus'] }}<br>
+            {% if t['sentiment_score'] is defined %}
+            <small>Sentiment: {{ t['sentiment_score'] }} (magnitudine: {{ t['sentiment_magnitude'] }})</small>
+            {% endif %}
         </div>
         {% else %}
         <p>Nu s-a tradus nimic inca</p>
