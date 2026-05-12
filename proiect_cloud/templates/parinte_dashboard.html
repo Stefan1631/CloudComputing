@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Catalog Digital - Părinte</title>
+    <style>
+        .child-card {
+            background: #fff;
+            border: 2px solid #3498db;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-block;
+            width: 200px;
+        }
+        .child-card:hover { transform: translateY(-5px); background: #e8f4fd; }
+        .back-btn { margin-bottom: 20px; display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="selectie-copii">
+        <div class="header">
+            <h1>Bun venit!</h1>
+            <p>Selectați copilul pentru a vedea situația școlară:</p>
+        </div>
+        <div id="lista-copii-cards"></div>
+    </div>
+
+    <div id="dashboard-copil" style="display:none;">
+        <button class="btn back-btn" id="btn-back" onclick="inapoiLaLista()">← Înapoi la lista de copii</button>
+        <div class="header">
+            <h1>Situatie Scolară: <span id="nume-copil-titlu"></span></h1>
+        </div>
+
+        <h3>Selectează Anul:</h3>
+        <div class="an-selector">
+            <button class="btn" onclick="incarcaAn(1)">Anul 1</button>
+            <button class="btn" onclick="incarcaAn(2)">Anul 2</button>
+            <button class="btn" onclick="incarcaAn(3)">Anul 3</button>
+            <button class="btn" onclick="incarcaAn(4)">Anul 4</button>
+        </div>
+
+        <div id="sectiune-semestre" style="display:none;">
+            <h3>Semestre:</h3>
+            <div class="semestru-selector">
+                <button class="btn" onclick="incarcaSemestru(1)">Semestrul 1</button>
+                <button class="btn" onclick="incarcaSemestru(2)">Semestrul 2</button>
+            </div>
+            <p id="container-medie-an">Medie Anuală: <strong id="medie-an">0.00</strong></p>
+        </div>
+        <div id="lista-materii"></div>
+    </div>
+</div>
+
+<script>
+    const PARINTE_ID = {{parinte_id}};
+    let dateAnCurent = null;
+    let copilSelectatId = null;
+
+    // 1. Încărcăm lista de copii la început
+    window.onload = async () => {
+        const res = await fetch(`/api/parinte/${PARINTE_ID}/copii`);
+        const copii = await res.json();
+        const container = document.getElementById('lista-copii-cards');
+
+        copii.forEach(c => {
+            container.innerHTML += `
+                <div class="child-card" onclick="selecteazaCopil(${c.id}, '${c.nume}')">
+                    <img src="https://ui-avatars.com/api/?name=${c.nume}&background=random" style="border-radius:50%; margin-bottom:10px;">
+                    <h3>${c.nume}</h3>
+                </div>`;
+        });
+    };
+
+    async function selecteazaCopil(id, nume) {
+        copilSelectatId = id;
+        document.getElementById('selectie-copii').style.display = 'none';
+        document.getElementById('dashboard-copil').style.display = 'block';
+        document.getElementById('btn-back').style.display = 'block';
+        document.getElementById('nume-copil-titlu').innerText = nume;
+    }
+
+    function inapoiLaLista() {
+        document.getElementById('selectie-copii').style.display = 'block';
+        document.getElementById('dashboard-copil').style.display = 'none';
+        document.getElementById('btn-back').style.display = 'none';
+        // Resetăm starea dashboard-ului
+        document.getElementById('sectiune-semestre').style.display = 'none';
+        document.getElementById('lista-materii').innerHTML = "";
+    }
+
+    // aceleasi  functii ca la elev_dashboard
+
+    async function incarcaAn(an) {
+        document.querySelectorAll('.an-selector .btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Chemăm endpoint-ul părintelui pentru a lua datele copilului
+        const res = await fetch(`/api/parinte/${PARINTE_ID}/situatie/${copilSelectatId}`);
+        const totiAnii = await res.json();
+
+        dateAnCurent = totiAnii.ani_studiu[an] || { error: "Nu sunt date" };
+
+        document.getElementById('sectiune-semestre').style.display = 'block';
+
+        if (dateAnCurent.error) {
+            document.getElementById('medie-an').innerText = "0.00";
+            document.getElementById('lista-materii').innerHTML = "<p>Nu există date pentru acest an.</p>";
+            return;
+        }
+
+        const medie = dateAnCurent.medie_anuala ? dateAnCurent.medie_anuala.toFixed(2) : "0.00";
+        document.getElementById('container-medie-an').innerHTML = `Medie Anuală Anul ${an}: <strong id="medie-an">${medie}</strong>`;
+        document.getElementById('lista-materii').innerHTML = "";
+    }
+
+    function incarcaSemestru(numar) {
+        document.querySelectorAll('.semestru-selector .btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        const sem = dateAnCurent.semestre ? dateAnCurent.semestre[numar] : null;
+
+        if (!sem || !sem.materii || sem.materii.length === 0) {
+            document.getElementById('lista-materii').innerHTML = `<p>Nu sunt date pentru acest semestru.</p>`;
+            return;
+        }
+
+        let html = `<h3>Materii Semestrul ${numar} (Medie: ${sem.medie_semestriala.toFixed(2)})</h3>`;
+        sem.materii.forEach((m, idx) => {
+            html += `
+                <div id="mat-${idx}">
+                    <div class="materie-card" onclick="arataNote('${m.nume}', ${numar}, ${idx})">
+                        <span>${m.nume}</span>
+                        <span class="medie-badge">${m.medie.toFixed(2)}</span>
+                    </div>
+                    <div id="note-target-${idx}"></div>
+                </div>`;
+        });
+        document.getElementById('lista-materii').innerHTML = html;
+    }
+
+    function arataNote(nume, sem, idx) {
+        const target = document.getElementById(`note-target-${idx}`);
+        if(target.innerHTML !== "") { target.innerHTML = ""; return; }
+
+        const materie = dateAnCurent.semestre[sem].materii.find(m => m.nume === nume);
+        let noteHtml = `<div class="note-container">`;
+        materie.note.forEach(n => {
+            noteHtml += `<div class="nota-row"><span>Nota: <strong>${n.valoare}</strong></span><span>${n.data}</span></div>`;
+        });
+        target.innerHTML = noteHtml + "</div>";
+    }
+</script>
+</body>
+</html>

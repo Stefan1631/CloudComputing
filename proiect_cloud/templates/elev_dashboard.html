@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Catalog Digital - Elev</title>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Salut, <span id="nume-elev">{{nume_elev}}</span>!</h1>
+        <p>Vizualizează situația ta școlară.</p>
+    </div>
+
+    <h3>Selectează Anul:</h3>
+    <div class="an-selector">
+        <button class="btn" onclick="incarcaAn(1)">Anul 1</button>
+        <button class="btn" onclick="incarcaAn(2)">Anul 2</button>
+        <button class="btn" onclick="incarcaAn(3)">Anul 3</button>
+        <button class="btn" onclick="incarcaAn(4)">Anul 4</button>
+    </div>
+
+    <div id="sectiune-semestre" style="display:none;">
+        <h3>Semestre:</h3>
+        <div class="semestru-selector">
+            <button class="btn" onclick="incarcaSemestru(1)">Semestrul 1</button>
+            <button class="btn" onclick="incarcaSemestru(2)">Semestrul 2</button>
+        </div>
+        <p>Medie Anuală Curentă: <strong id="medie-an">0.00</strong></p>
+    </div>
+
+    <div id="lista-materii">
+    </div>
+</div>
+
+<script>
+    let dateAnCurent = null;
+    const ELEV_ID = {{elev_id}};
+
+    async function incarcaAn(an) {
+        // resetez culorile butoanelor pt ani
+        document.querySelectorAll('.an-selector .btn').forEach(b => b.classList.remove('active'));
+        // facem butonul apasat active
+        event.target.classList.add('active');
+
+        const res = await fetch(`/api/situatie-anuala/${ELEV_ID}/${an}`);
+        dateAnCurent = await res.json();
+
+        document.getElementById('sectiune-semestre').style.display = 'block';
+
+        //in cazul in care nu exista date in acel an
+        if (dateAnCurent.error) {
+            document.getElementById('medie-an').innerText = "0.00";
+            document.getElementById('lista-materii').innerHTML = "<p>Nu există date pentru acest an.</p>";
+            return;
+        }
+
+        document.getElementById('medie-an').parentElement.innerHTML = `Medie Anuala Anul ${an}: <strong id="medie-an">${dateAnCurent.medie_anuala.toFixed(2) || 0}</strong>`;
+        document.getElementById('lista-materii').innerHTML = "";
+    }
+
+    function incarcaSemestru(numar) {
+        // resetez culorile butoanelor pt  semestru
+        document.querySelectorAll('.semestru-selector .btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+
+        const sem = dateAnCurent.semestre ? dateAnCurent.semestre[numar] : null;
+
+        //in cazul in care in semestrul respectiv nu sunt date inca
+        if (!sem || !sem.materii || sem.materii.length === 0 || !dateAnCurent || dateAnCurent.error) {
+            document.getElementById('lista-materii').innerHTML = `<h3>Materii Semestrul ${numar}</h3><p>Nu sunt materii înregistrate în acest semestru.</p>`;
+        return;
+        }
+
+        let html = `<h3>Materii Semestrul ${numar} (Medie Semestriala: ${sem.medie_semestriala.toFixed(2)})</h3>`;
+
+        sem.materii.forEach((m, index) => {
+            html += `
+               <div id="materie-${index}">
+                    <div class="materie-card" onclick="arataNote('${m.nume}', ${numar}, ${index})">
+                        <span>${m.nume}</span>
+                        <span class="medie-badge">${(m.medie || 0).toFixed(2)}</span>
+                    </div>
+               <div id="note-target-${index}"></div>
+            </div>`;
+        });
+        document.getElementById('lista-materii').innerHTML = html;
+    }
+
+
+    function arataNote(numeMaterie, semNumar, index) {
+        const target = document.getElementById(`note-target-${index}`);
+
+        // inchidem dropdownul daca deja e deschis
+        if (target.innerHTML !== "") {
+            target.innerHTML = "";
+            return;
+        }
+
+        // daca avem alte dropdownuri de note deschise le inchidem
+        document.querySelectorAll('[id^="note-target-"]').forEach(el => el.innerHTML = "");
+
+        const materie = dateAnCurent.semestre[semNumar].materii.find(m => m.nume === numeMaterie);
+
+        if (!materie.note || materie.note.length === 0) {
+            target.innerHTML = `<div class="note-container"><p>Nu sunt note la această materie.</p></div>`;
+            return;
+        }
+
+        let noteHtml = `<div class="note-container"><strong>Istoric Note:</strong>`;
+        materie.note.forEach(n => {
+            noteHtml += `
+                <div class="nota-row">
+                    <span>Nota: <strong>${n.valoare}</strong></span>
+                    <span>Data: ${n.data}</span>
+                </div>`;
+        });
+        noteHtml += `</div>`;
+
+        target.innerHTML = noteHtml;
+    }
+</script>
+</body>
+</html>
