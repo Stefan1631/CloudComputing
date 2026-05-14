@@ -44,12 +44,36 @@ class AnScolar(BaseModel):
         return round(sum(medii) / len(medii), 2)
 
 
+class User(BaseModel):
+    id: int
+    username: str
+    password: str
+    rol: str
+
+
 class Elev(BaseModel):
     id: int
     nume: str
     ani_studiu: Dict[int, AnScolar]
+    user: User
 
 
 class Parinte_Tutore(BaseModel):
     id: int
     elevi: List[Elev] = []
+    user: User
+
+
+class Profesor(BaseModel):
+    id: int
+    nume: str
+    user: User
+    nume_materie: str
+    clase_ids:List[int]
+
+
+class ClasaElevi(BaseModel):
+    id: int
+    nume_clasa:str
+    an: int
+    elevi: List[Elev]

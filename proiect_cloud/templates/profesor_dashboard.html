@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Profesor - {{ prof.nume }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .prof-container { display: flex; gap: 20px; padding: 20px; }
+        .sidebar { width: 250px; background: #f4f4f4; padding: 15px; border-radius: 8px; }
+        .main-content { flex-grow: 1; }
+        .elev-row { border-bottom: 1px solid #ddd; padding: 10px 0; }
+        .note-badge {
+            background: #e1f5fe; padding: 5px 10px; border-radius: 4px;
+            margin-right: 5px; cursor: pointer; display: inline-block;
+        }
+        .note-badge:hover { background: #b3e5fc; }
+        .btn-add { background: #4caf50; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Panou Profesor: {{ prof.nume }}</h1>
+        <p>Materia: <strong>{{ prof.nume_materie }}</strong></p>
+    </header>
+
+    <div class="prof-container">
+        <aside class="sidebar">
+            <h3>Clasele Mele</h3>
+            <ul id="clase-list">
+                {% for clasa in clase %}
+                <li style="cursor:pointer; color:blue; text-decoration:underline;"
+                    onclick="incarcaClasa('{{ clasa.id }}', '{{ clasa.nume }}')">
+                    Clasa {{ clasa.nume }}
+                </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <h2 id="current-clasa-title">Selectează o clasă din stânga</h2>
+            <div id="elevi-tabel-container">
+            </div>
+        </main>
+    </div>
+
+    <div id="nota-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border:1px solid #000; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+        <h3>Gestionare Notă</h3>
+        <input type="number" id="modal-valoare" min="1" max="10">
+        <input type="date" id="modal-data">
+        <button onclick="salveazaNota()">Salvează</button>
+        <button onclick="inchideModal()">Anulează</button>
+        <button id="btn-sterge-modal" style="background:red; color:white; display:none;" onclick="stergeNota()">Șterge Nota</button>
+    </div>
+
+    <script>
+        let currentClasaId = null;
+        let selectedElevId = null;
+        let selectedNotaIdx = null;
+        let currentAction = 'adauga';
+        const numeMaterie = "{{ prof.nume_materie }}";
+
+        async function incarcaClasa(id, nume) {
+            currentClasaId = id;
+            document.getElementById('current-clasa-title').innerText = "Clasa " + nume;
+
+            const response = await fetch(`/api/clasa/${id}/elevi`);
+            const elevi = await response.json();
+
+            let html = '<table width="100%"><tr><th>Elev</th><th>Note (Matematica)</th><th>Acțiuni</th></tr>';
+
+            elevi.forEach(elev => {
+                // Presupunem an 1, semestru 1 pentru acest exemplu
+                const ani = elev.ani_studiu || {};
+                const semestre = ani["1"]?.semestre || {};
+                const materii = semestre["1"]?.materii || [];
+                const mate = materii.find(m => m.nume === numeMaterie) || { note: [] };
+
+                html += `<tr>
+                    <td>${elev.nume}</td>
+                    <td>
+                        ${mate.note.map((n, idx) => `
+                            <span class="note-badge" onclick="deschideEditare('${elev.id}', ${idx}, ${n.valoare}, '${n.data}')">
+                                ${n.valoare}
+                            </span>
+                        `).join('')}
+                    </td>
+                    <td>
+                        <button class="btn-add" onclick="deschideAdaugare('${elev.id}')">+ Notă</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</table>';
+            document.getElementById('elevi-tabel-container').innerHTML = html;
+        }
+
+        function deschideAdaugare(elevId) {
+            currentAction = 'adauga';
+            selectedElevId = elevId;
+            selectedNotaIdx = null;
+            document.getElementById('modal-valoare').value = 10;
+            document.getElementById('modal-data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('btn-sterge-modal').style.display = 'none';
+            document.getElementById('nota-modal').style.display = 'block';
+        }
+
+        function deschideEditare(elevId, idx, valoare, data) {
+            currentAction = 'modifica';
+            selectedElevId = elevId;
+            selectedNotaIdx = idx;
+            document.getElementById('modal-valoare').value = valoare;
+            document.getElementById('modal-data').value = data;
+            document.getElementById('btn-sterge-modal').style.display = 'inline-block';
+            document.getElementById('nota-modal').style.display = 'block';
+        }
+
+        async function salveazaNota() {
+            const val = document.getElementById('modal-valoare').value;
+            const dt = document.getElementById('modal-data').value;
+
+            const payload = {
+                clasa_id: currentClasaId,
+                elev_id: parseInt(selectedElevId),
+                an: 1, semestru: 1,
+                materie: numeMaterie,
+                actiune: currentAction,
+                nota_index: selectedNotaIdx,
+                valoare_noua: parseInt(val),
+                data_noua: dt
+            };
+
+            const resp = await fetch('/api/profesor/gestioneaza-nota', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if(resp.ok) {
+                inchideModal();
+                incarcaClasa(currentClasaId, ""); // Refresh date
+            }
+        }
+
+        async function stergeNota() {
+            if(!confirm("Sigur ștergi nota?")) return;
+            const payload = {
+                clasa_id: currentClasaId,
+                elev_id: parseInt(selectedElevId),
+                an: 1, semestru: 1,
+                materie: numeMaterie,
+                actiune: 'sterge',
+                nota_index: selectedNotaIdx
+            };
+            await fetch('/api/profesor/gestioneaza-nota', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            inchideModal();
+            incarcaClasa(currentClasaId, "");
+        }
+
+        function inchideModal() { document.getElementById('nota-modal').style.display = 'none'; }
+    </script>
+</body>
+</html>

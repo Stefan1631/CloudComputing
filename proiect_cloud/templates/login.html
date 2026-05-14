@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style-login.css">
     <title>Catalog Digital - Autentificare</title>
 </head>
-<body class="auth-wrapper">
+<body class="auth-page">
 
     <div class="auth-card" id="login-container">
         <h1>Bine ai revenit!</h1>
@@ -14,70 +14,44 @@
 
         <div id="login-form">
             <label for="username">Utilizator</label>
-            <input type="text" id="username" class="input-field" placeholder="ex: parinte1 sau stefan">
+            <input type="text" id="username" class="input-field" placeholder="introduceti parola">
 
             <label for="password">Parolă</label>
-            <input type="password" id="password" class="input-field" value="********">
+            <input type="password" id="password" class="input-field" placeholder="introduceti parola">
 
             <button class="btn-login" onclick="handleLogin()">Conectare</button>
         </div>
 
-        <div id="register-form" style="display: none;">
-            <label for="reg-name">Nume Complet</label>
-            <input type="text" id="reg-name" class="input-field">
-
-            <label for="reg-role">Rol</label>
-            <select id="reg-role" class="input-field">
-                <option value="elev">Elev</option>
-                <option value="parinte">Părinte</option>
-            </select>
-
-            <button class="btn-login" onclick="alert('Înregistrarea va fi disponibilă după conectarea bazei de date!')">Creează Cont</button>
-        </div>
-
-        <div class="auth-footer">
-            <div id="footer-login">Nu ai cont? <span onclick="toggleAuth()">Înregistrează-te</span></div>
-            <div id="footer-reg" style="display: none;">Ai deja cont? <span onclick="toggleAuth()">Conectează-te</span></div>
-        </div>
     </div>
 
     <script>
-        function toggleAuth() {
-            const isLogin = document.getElementById('login-form').style.display !== 'none';
-
-            document.getElementById('login-form').style.display = isLogin ? 'none' : 'block';
-            document.getElementById('footer-login').style.display = isLogin ? 'none' : 'block';
-
-            document.getElementById('register-form').style.display = isLogin ? 'block' : 'none';
-            document.getElementById('footer-reg').style.display = isLogin ? 'block' : 'none';
-
-            document.querySelector('.auth-card h1').innerText = isLogin ? 'Cont Nou' : 'Bine ai revenit!';
-        }
 
         async function handleLogin() {
             const userVal = document.getElementById('username').value;
-
+            const passVal = document.getElementById('password').value;
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: userVal })
+                    body: JSON.stringify({ username: userVal, password: passVal })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Redirecționare în funcție de ce trimite serverul
+                    // redirectionare in functie de ce trimite serverul
                     if (data.rol === 'parinte') {
                         window.location.href = `/parinte/${data.id}`;
                     } else if (data.rol === 'elev') {
                         window.location.href = `/elev/${data.id}`;
-                    }
+                    } else if (data.rol === 'profesor') {
+                        window.location.href = `/profesor/${data.id}`;
+}
                 } else {
                     alert("Date de autentificare invalide!");
                 }
             } catch (error) {
                 console.error("Eroare la login:", error);
-                alert("A apărut o problemă la conexiunea cu serverul.");
+                alert("A aparut o problema la conexiunea cu serverul.");
             }
         }
     </script>

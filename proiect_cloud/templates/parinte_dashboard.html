@@ -31,7 +31,7 @@
     </div>
 
     <div id="dashboard-copil" style="display:none;">
-        <button class="btn back-btn" id="btn-back" onclick="inapoiLaLista()">← Înapoi la lista de copii</button>
+        <button class="btn back-btn" id="btn-back" onclick="inapoiLaLista()">Înapoi la lista de copii</button>
         <div class="header">
             <h1>Situatie Scolară: <span id="nume-copil-titlu"></span></h1>
         </div>
@@ -61,7 +61,7 @@
     let dateAnCurent = null;
     let copilSelectatId = null;
 
-    // 1. Încărcăm lista de copii la început
+    // 1. incarcam lista de copii la început
     window.onload = async () => {
         const res = await fetch(`/api/parinte/${PARINTE_ID}/copii`);
         const copii = await res.json();
