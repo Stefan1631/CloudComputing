@@ -183,6 +183,37 @@ class DatastoreService:
         db.put(entity)
 
     @staticmethod
+    def get_all_clase():
+        if DatastoreService._local_mode:
+            return list(DatastoreService._local_clase.values())
+        query = db.query(kind="clase")
+        return [dict(r) for r in query.fetch()]
+
+    @staticmethod
+    def get_all_elevi():
+        if DatastoreService._local_mode:
+            return list(DatastoreService._local_elevi.values())
+        query = db.query(kind="elevi")
+        return [dict(r) for r in query.fetch()]
+
+    @staticmethod
+    def add_elev_to_clasa(clasa_id: int, elev_dict: dict):
+        clean = DatastoreService._fix_keys(elev_dict)
+        if DatastoreService._local_mode:
+            clasa = DatastoreService._local_clase.get(str(clasa_id))
+            if clasa:
+                clasa['elevi'].append(clean)
+            return
+        key = db.key("clase", str(clasa_id))
+        with db.transaction():
+            clasa = db.get(key)
+            if clasa:
+                elevi = clasa.get('elevi', [])
+                elevi.append(clean)
+                clasa['elevi'] = elevi
+                db.put(clasa)
+
+    @staticmethod
     def get_anunturi():
         if DatastoreService._local_mode:
             return list(DatastoreService._local_anunturi.values())

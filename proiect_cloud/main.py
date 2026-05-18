@@ -339,6 +339,18 @@ async def secretar_dashboard(request: Request, secretar_id: int):
                                       context={"secretar": date_secretar})
 
 
+@app.get("/api/clase")
+async def get_clase():
+    clase = DatastoreService.get_all_clase()
+    return [{"id": c['id'], "nume_clasa": c['nume_clasa']} for c in clase]
+
+
+@app.get("/api/elevi")
+async def get_elevi():
+    elevi = DatastoreService.get_all_elevi()
+    return [{"id": e['id'], "nume": e['nume']} for e in elevi]
+
+
 @app.get("/api/anunturi")
 async def get_anunturi():
     return DatastoreService.get_anunturi()
@@ -378,12 +390,22 @@ async def creeaza_cont(data: dict):
     if rol == 'elev':
         nou_elev = Elev(id=new_entity_id, nume=data.get('nume', ''), ani_studiu={}, user=new_user)
         DatastoreService.create_elev(new_entity_id, nou_elev.model_dump())
+        clasa_id = data.get('clasa_id')
+        if clasa_id:
+            DatastoreService.add_elev_to_clasa(int(clasa_id), nou_elev.model_dump())
     elif rol == 'parinte':
-        nou_parinte = Parinte_Tutore(id=new_entity_id, elevi=[], user=new_user)
+        elevi_ids = data.get('elevi_ids', [])
+        elevi_data = []
+        for elev_id in elevi_ids:
+            elev = DatastoreService.get_elev(int(elev_id))
+            if elev:
+                elevi_data.append(elev)
+        nou_parinte = Parinte_Tutore(id=new_entity_id, elevi=[Elev(**e) for e in elevi_data], user=new_user)
         DatastoreService.create_parinte(new_entity_id, nou_parinte.model_dump())
     elif rol == 'profesor':
+        clase_ids = [int(c) for c in data.get('clase_ids', [])]
         nou_prof = Profesor(id=new_entity_id, nume=data.get('nume', ''), user=new_user,
-                            nume_materie=data.get('nume_materie', ''), clase_ids=[])
+                            nume_materie=data.get('nume_materie', ''), clase_ids=clase_ids)
         DatastoreService.create_profesor(new_entity_id, nou_prof.model_dump())
     else:
         raise HTTPException(status_code=400, detail="Rol invalid")
