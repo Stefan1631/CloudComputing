@@ -1,3 +1,5 @@
+import os
+from datetime import date
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -19,7 +21,8 @@ users = [
     User(id=200, username="stefan", password="123", rol="elev"),
     User(id=300, username="tudor", password="123", rol="elev"),
     User(id=400, username="parinte1", password="123", rol="parinte"),
-    User(id=500, username="prof1", password="123", rol="profesor")
+    User(id=500, username="prof1", password="123", rol="profesor"),
+    User(id=600, username="secretar1", password="123", rol="secretar"),
 ]
 
 elev_test = Elev(
@@ -76,6 +79,12 @@ prof_mate = Profesor(
 )
 
 
+secretar_test = Secretar(
+    id=1,
+    nume="Maria Ionescu",
+    user=users[4]
+)
+
 db_parinti = {101: parinte_test}
 db_elevi = {
     1: elev_test,
@@ -83,6 +92,23 @@ db_elevi = {
 }
 db_clase = [clasa_12a]
 db_profesori = [prof_mate]
+db_secretari = {1: secretar_test}
+
+anunturi_initiale = [
+    Anunt(id=1, titlu="Teze semestrul 2", continut="Tezele din semestrul 2 vor fi sustinute in perioada 20-31 mai 2026.", data="2026-05-01", autor="Maria Ionescu"),
+    Anunt(id=2, titlu="Sedinta cu parintii", continut="Sedinta cu parintii va avea loc pe 22 mai 2026, ora 18:00, in sala de festivitati.", data="2026-05-10", autor="Maria Ionescu"),
+]
+
+if not os.environ.get('GAE_ENV'):
+    DatastoreService.setup_local_data(
+        users=[u.model_dump() for u in users],
+        elevi={k: v.model_dump() for k, v in db_elevi.items()},
+        parinti={k: v.model_dump() for k, v in db_parinti.items()},
+        clase=[c.model_dump() for c in db_clase],
+        profesori=[p.model_dump() for p in db_profesori],
+        secretari=[s.model_dump() for s in db_secretari.values()],
+        anunturi=[a.model_dump() for a in anunturi_initiale],
+    )
 
 templates = Jinja2Templates(directory="templates")
 
@@ -302,6 +328,67 @@ async def get_clasa_elevi(clasa_id: int):
     if not clasa:
         return []
     return clasa.get('elevi', [])
+
+
+@app.get("/secretar/{secretar_id}", response_class=HTMLResponse)
+async def secretar_dashboard(request: Request, secretar_id: int):
+    date_secretar = DatastoreService.get_secretar(secretar_id)
+    if not date_secretar:
+        raise HTTPException(status_code=404, detail="Secretarul nu a fost gasit")
+    return templates.TemplateResponse(name="secretar_dashboard.html", request=request,
+                                      context={"secretar": date_secretar})
+
+
+@app.get("/api/anunturi")
+async def get_anunturi():
+    return DatastoreService.get_anunturi()
+
+
+@app.post("/api/secretar/anunt")
+async def adauga_anunt(data: dict):
+    anunt_id = DatastoreService.get_next_id('anunt')
+    anunt = Anunt(
+        id=anunt_id,
+        titlu=data.get("titlu", ""),
+        continut=data.get("continut", ""),
+        autor=data.get("autor", ""),
+        data=str(date.today())
+    )
+    DatastoreService.create_anunt(anunt.model_dump())
+    return {"status": "success"}
+
+
+@app.post("/api/secretar/creeaza-cont")
+async def creeaza_cont(data: dict):
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    rol = data.get('rol', '').strip()
+
+    if not username or not password or not rol:
+        raise HTTPException(status_code=400, detail="Date incomplete")
+
+    if DatastoreService.get_user_auth_mapping(username):
+        raise HTTPException(status_code=400, detail="Username-ul exista deja")
+
+    new_user_id = DatastoreService.get_next_id('user')
+    new_entity_id = DatastoreService.get_next_id('entity')
+    new_user = User(id=new_user_id, username=username, password=password, rol=rol)
+    DatastoreService.create_user(new_user.model_dump())
+
+    if rol == 'elev':
+        nou_elev = Elev(id=new_entity_id, nume=data.get('nume', ''), ani_studiu={}, user=new_user)
+        DatastoreService.create_elev(new_entity_id, nou_elev.model_dump())
+    elif rol == 'parinte':
+        nou_parinte = Parinte_Tutore(id=new_entity_id, elevi=[], user=new_user)
+        DatastoreService.create_parinte(new_entity_id, nou_parinte.model_dump())
+    elif rol == 'profesor':
+        nou_prof = Profesor(id=new_entity_id, nume=data.get('nume', ''), user=new_user,
+                            nume_materie=data.get('nume_materie', ''), clase_ids=[])
+        DatastoreService.create_profesor(new_entity_id, nou_prof.model_dump())
+    else:
+        raise HTTPException(status_code=400, detail="Rol invalid")
+
+    return {"status": "success", "user_id": new_user_id, "entity_id": new_entity_id}
 
 
 # temporar

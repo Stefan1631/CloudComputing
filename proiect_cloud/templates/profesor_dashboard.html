@@ -18,10 +18,17 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Panou Profesor: {{ prof.nume }}</h1>
-        <p>Materia: <strong>{{ prof.nume_materie }}</strong></p>
+    <header style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:#fff; border-bottom:2px solid #3498db;">
+        <div>
+            <h1 style="margin:0;">Panou Profesor: {{ prof.nume }}</h1>
+            <p style="margin:4px 0 0;">Materia: <strong>{{ prof.nume_materie }}</strong></p>
+        </div>
+        <button class="btn" onclick="toggleAnunturi()">Anunțuri</button>
     </header>
+    <div id="anunturi-panel" style="display:none; background:#fff8e1; border:1px solid #ffd54f; border-radius:8px; padding:15px; margin:15px 20px;">
+        <h3 style="margin-top:0;">Anunțuri</h3>
+        <div id="anunturi-content">Se încarcă...</div>
+    </div>
 
     <div class="prof-container">
         <aside class="sidebar">
@@ -53,6 +60,32 @@
     </div>
 
     <script>
+        let anunturiIncarcate = false;
+        async function toggleAnunturi() {
+            const panel = document.getElementById('anunturi-panel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                if (!anunturiIncarcate) {
+                    const res = await fetch('/api/anunturi');
+                    const anunturi = await res.json();
+                    const container = document.getElementById('anunturi-content');
+                    if (anunturi.length === 0) {
+                        container.innerHTML = '<p>Nu există anunțuri.</p>';
+                    } else {
+                        container.innerHTML = anunturi.map(a => `
+                            <div style="border-bottom:1px solid #ffe082; padding:10px 0;">
+                                <strong>${a.titlu}</strong>
+                                <span style="font-size:12px; color:#888; margin-left:10px;">${a.data} · ${a.autor}</span>
+                                <p style="margin:5px 0 0;">${a.continut}</p>
+                            </div>`).join('');
+                    }
+                    anunturiIncarcate = true;
+                }
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
         let currentClasaId = null;
         let selectedElevId = null;
         let selectedNotaIdx = null;

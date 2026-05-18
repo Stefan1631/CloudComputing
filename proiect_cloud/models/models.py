@@ -77,3 +77,17 @@ class ClasaElevi(BaseModel):
     nume_clasa:str
     an: int
     elevi: List[Elev]
+
+
+class Secretar(BaseModel):
+    id: int
+    nume: str
+    user: User
+
+
+class Anunt(BaseModel):
+    id: int
+    titlu: str
+    continut: str
+    data: str
+    autor: str

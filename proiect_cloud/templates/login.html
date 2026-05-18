@@ -45,7 +45,9 @@
                         window.location.href = `/elev/${data.id}`;
                     } else if (data.rol === 'profesor') {
                         window.location.href = `/profesor/${data.id}`;
-}
+                    } else if (data.rol === 'secretar') {
+                        window.location.href = `/secretar/${data.id}`;
+                    }
                 } else {
                     alert("Date de autentificare invalide!");
                 }
