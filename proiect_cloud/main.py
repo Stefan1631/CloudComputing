@@ -99,7 +99,7 @@ anunturi_initiale = [
     Anunt(id=2, titlu="Sedinta cu parintii", continut="Sedinta cu parintii va avea loc pe 22 mai 2026, ora 18:00, in sala de festivitati.", data="2026-05-10", autor="Maria Ionescu"),
 ]
 
-if not os.environ.get('GAE_ENV'):
+if not os.environ.get('GAE_ENV') and not os.environ.get('K_SERVICE'):
     DatastoreService.setup_local_data(
         users=[u.model_dump() for u in users],
         elevi={k: v.model_dump() for k, v in db_elevi.items()},
