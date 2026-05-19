@@ -419,7 +419,7 @@ async def init_db():
     try:
         DatastoreService.seed_db(users_list=users, elevi_dict=db_elevi,
                                  parinti_dict=db_parinti, clase_list=db_clase,
-                                 prof_list=db_profesori)
+                                 prof_list=db_profesori, secretari_dict=db_secretari)
         return {"status": "Succes", "message": "Datele au fost încarcate in Datastore."}
     except Exception as e:
         print(f"Eroare Seeding: {e}")

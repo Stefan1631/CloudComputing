@@ -295,7 +295,7 @@ class DatastoreService:
             return data
 
     @staticmethod
-    def seed_db(users_list, elevi_dict, parinti_dict, clase_list, prof_list):
+    def seed_db(users_list, elevi_dict, parinti_dict, clase_list, prof_list, secretari_dict=None):
         if DatastoreService._local_mode:
             return
         for u in users_list:
@@ -322,4 +322,9 @@ class DatastoreService:
             key = db.key("profesori", str(p.id))
             entity = datastore.Entity(key=key)
             entity.update(DatastoreService._fix_keys(p.model_dump()))
+            db.put(entity)
+        for s_id, s_obj in (secretari_dict or {}).items():
+            key = db.key("secretari", str(s_id))
+            entity = datastore.Entity(key=key)
+            entity.update(DatastoreService._fix_keys(s_obj.model_dump()))
             db.put(entity)
